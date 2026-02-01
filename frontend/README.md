@@ -31,24 +31,39 @@ The frontend dashboard provides an intuitive interface for monitoring network tr
 frontend/
 │
 ├── src/
-│   ├── App.tsx              # Main application component
-│   ├── main.tsx             # Application entry point
-│   ├── index.css            # Global styles
-│   ├── vite-env.d.ts        # Vite environment types
-│   └── services/
-│       └── api.ts           # API communication layer
+│   ├── components/              # React Components
+│   │   ├── AIExplanation.tsx    # AI explanation panel
+│   │   ├── BlockedIPs.tsx       # Blocked IPs display
+│   │   ├── ConnectionStatus.tsx # Connection status indicator
+│   │   ├── ControlButton.tsx    # Capture control button
+│   │   ├── Footer.tsx           # Footer component
+│   │   ├── Header.tsx           # Header with title
+│   │   ├── LivePacketTable.tsx  # Live packets table
+│   │   ├── StatsPanel.tsx       # Statistics panel
+│   │   └── TrafficChart.tsx     # Traffic visualization chart
+│   │
+│   ├── services/
+│   │   └── api.ts               # API communication layer
+│   │
+│   ├── types/
+│   │   └── index.ts             # TypeScript type definitions
+│   │
+│   ├── App.tsx                  # Main application component
+│   ├── main.tsx                 # Application entry point
+│   ├── index.css                # Global styles
+│   └── vite-env.d.ts            # Vite environment types
 │
 ├── public/
-│   └── vite.svg             # Application icon
+│   └── vite.svg                 # Application icon
 │
-├── package.json             # Dependencies and scripts
-├── vite.config.ts          # Vite configuration
-├── tailwind.config.js      # Tailwind CSS configuration
-├── tsconfig.json           # TypeScript configuration
-├── tsconfig.app.json       # App-specific TypeScript config
-├── tsconfig.node.json      # Node-specific TypeScript config
-├── eslint.config.js        # ESLint configuration
-└── postcss.config.js       # PostCSS configuration
+├── package.json                 # Dependencies and scripts
+├── vite.config.ts              # Vite configuration
+├── tailwind.config.js          # Tailwind CSS configuration
+├── tsconfig.json               # TypeScript configuration
+├── tsconfig.app.json           # App-specific TypeScript config
+├── tsconfig.node.json          # Node-specific TypeScript config
+├── eslint.config.js            # ESLint configuration
+└── postcss.config.js           # PostCSS configuration
 ```
 
 ## Prerequisites

@@ -1,4 +1,4 @@
-// backend/index.js - COMPLETE (with attack-detector middleware wired)
+// backend/index.js - UPDATED for Enhanced Model System
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -20,18 +20,16 @@ const io = new Server(server, {
   transports: ['websocket', 'polling']
 });
 
-// Make io available to middleware via app.get('io')
 app.set("io", io);
 
 // ---------------- GLOBAL MIDDLEWARE ----------------
-// Attach JSON parser and CORS first
 app.use(cors({
   origin: ["http://localhost:5173", "http://127.0.0.1:5173"],
   credentials: true
 }));
 app.use(express.json({ limit: '10mb' }));
 
-// Protect capture control from simulated clients (ignore X-Simulated-Attack for start/stop)
+// Protect capture control from simulated clients
 app.use((req, res, next) => {
   if ((req.method === "POST") && (req.path === "/api/start-capture" || req.path === "/api/stop-capture")) {
     if (req.get("X-Simulated-Attack") === "true") {
@@ -42,18 +40,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// Load and attach attack detector middleware BEFORE routes (optional; fails gracefully)
-try {
-  const attackDetector = require(path.join(__dirname, 'middleware', 'attack-detector'));
-  app.use(attackDetector);
-  console.log('🔒 Attack detector middleware attached');
-} catch (err) {
-  console.warn('⚠️ Could not attach attack-detector middleware:', err.message);
-}
-
 // ---------------- CONFIG ----------------
-const FLASK_URL = 'http://localhost:5001';   // Flask capture system
-const LAPTOP_IP = getLaptopIp();             // detect or set statically if you prefer
+const FLASK_URL = 'http://localhost:5001';   // Enhanced Flask system
+const LAPTOP_IP = getLaptopIp();
 
 // ---------------- STATE ----------------
 let blockedIPs = [];
@@ -80,7 +69,13 @@ function getLaptopIp() {
 
 // ---------------- HEALTH ----------------
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', ip: LAPTOP_IP, time: new Date().toISOString() });
+  res.json({ 
+    status: 'OK', 
+    ip: LAPTOP_IP, 
+    time: new Date().toISOString(),
+    system: 'enhanced',
+    version: '3.0'
+  });
 });
 
 // ---------------- CAPTURE CONTROL ----------------
@@ -89,8 +84,8 @@ app.post('/api/start-capture', async (req, res) => {
     await axios.post(`${FLASK_URL}/start-capture`);
     io.emit('capture-started');
     isCapturing = true;
-    console.log("✅ Capture started via Flask");
-    res.json({ success: true });
+    console.log("✅ Capture started via Enhanced Flask");
+    res.json({ success: true, mode: 'enhanced' });
   } catch (err) {
     console.error('❌ Error starting capture:', err.message);
     res.json({ success: false, error: err.message });
@@ -115,28 +110,57 @@ app.post('/api/live-packet', (req, res) => {
   const packet = req.body;
   packetCount++;
 
-  io.emit('new_packet', packet);
+  // Enhanced packet handling with AI explanations
+  const enhancedPacket = {
+    ...packet,
+    id: `pkt-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+    receivedAt: new Date().toISOString()
+  };
 
-  console.log(`📡 [${packetCount}] Packet from ${packet.srcIP || 'unknown'} → ${packet.dstIP || 'unknown'}`);
+  io.emit('new_packet', enhancedPacket);
 
-  res.json({ ok: true });
+  // Log with enhanced details
+  if (packet.explanation) {
+    console.log(`📡 [AI] Packet from ${packet.srcIP} → Confidence: ${packet.confidence || 0}`);
+  } else {
+    console.log(`📡 [${packetCount}] Packet from ${packet.srcIP || 'unknown'} → ${packet.dstIP || 'unknown'}`);
+  }
+
+  res.json({ ok: true, enhanced: true });
 });
 
 // ---------------- BLOCK MANAGEMENT ----------------
 app.get('/api/blocked-ips', (req, res) => {
-  res.json(blockedIPs);
+  res.json(blockedIPs.map(ip => ({
+    ...ip,
+    system: 'enhanced',
+    hasExplanation: !!ip.explanation
+  })));
 });
 
 app.post('/api/emit-blocked-ip', (req, res) => {
-  const { ip, confidence = 99, reason = 'DDoS Flood' } = req.body;
+  const { 
+    ip, 
+    confidence = 99, 
+    reason = 'DDoS Flood',
+    explanation = null,
+    model_used = 'enhanced',
+    network_slice = 'eMBB'
+  } = req.body;
+  
   if (!ip) return res.status(400).json({ error: 'No IP provided' });
 
   const block = {
     ip,
     timestamp: new Date().toISOString(),
     reason,
-    threatLevel: confidence > 90 ? 'high' : 'medium',
-    mitigation: 'SDN DROP Rule'
+    threatLevel: confidence > 90 ? 'high' : confidence > 70 ? 'medium' : 'low',
+    mitigation: 'SDN DROP Rule',
+    confidence,
+    explanation,
+    model_used,
+    network_slice,
+    features_count: explanation?.features_count || 0
   };
 
   if (!blockedIPs.find(b => b.ip === ip)) {
@@ -149,7 +173,9 @@ app.post('/api/emit-blocked-ip', (req, res) => {
       protocol: 'UDP',
       packetSize: 1024,
       action: 'Blocked',
-      prediction: 'ddos'
+      prediction: 'ddos',
+      confidence,
+      explanation
     });
   }
 
@@ -161,12 +187,14 @@ app.post('/api/emit-blocked-ip', (req, res) => {
     confidence: confidence / 100,
     prediction: 'ddos',
     abuseScore: confidence,
-    threat_level: confidence > 90 ? 'HIGH' : 'MEDIUM'
+    threat_level: confidence > 90 ? 'HIGH' : confidence > 70 ? 'MEDIUM' : 'LOW',
+    explanation,
+    model_used
   });
 
-  console.log(`🚫 Blocked IP emitted: ${ip}`);
+  console.log(`🚫 Enhanced Blocked IP: ${ip} (Confidence: ${confidence}%)`);
 
-  res.json({ success: true });
+  res.json({ success: true, enhanced: true });
 });
 
 app.post('/api/unblock', (req, res) => {
@@ -176,6 +204,53 @@ app.post('/api/unblock', (req, res) => {
   io.emit('unblocked_ip', { ip });
   console.log(`♻️ Unblocked IP: ${ip}`);
   res.json({ success: true });
+});
+
+// ---------------- ENHANCED MODEL STATUS ----------------
+app.get('/api/model-status', async (req, res) => {
+  try {
+    const response = await axios.get(`${FLASK_URL}/health`, { timeout: 3000 });
+    res.json({
+      ml_status: response.data.ml_engine_ready ? 'connected' : 'disconnected',
+      features_count: response.data.features_count || 0,
+      version: response.data.version || 'unknown',
+      enhanced: true,
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.json({
+      ml_status: 'disconnected',
+      error: error.message,
+      enhanced: false,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// ---------------- AI EXPLANATION ENDPOINT ----------------
+app.post('/api/explain-detection', async (req, res) => {
+  try {
+    const { features } = req.body;
+    
+    // Forward to Flask for AI explanation
+    const response = await axios.post(`${FLASK_URL}/predict`, {
+      features
+    }, { timeout: 5000 });
+    
+    res.json({
+      success: true,
+      explanation: response.data.explanation,
+      prediction: response.data.prediction,
+      confidence: response.data.confidence
+    });
+  } catch (error) {
+    console.error('Explanation error:', error.message);
+    res.json({
+      success: false,
+      error: 'Explanation service unavailable',
+      fallback: true
+    });
+  }
 });
 
 // ---------------- SOCKET EVENTS ----------------
@@ -188,7 +263,16 @@ io.on('connection', (socket) => {
     packetCount,
     packetsPerSecond: 0,
     totalBytes: 0,
-    duration: 0
+    duration: 0,
+    system: 'enhanced'
+  });
+
+  socket.emit('system-info', {
+    version: '3.0',
+    enhanced: true,
+    ai_capable: true,
+    model_status: 'ready',
+    features: ['ai_explanations', '5g_slicing', 'real_time_ml']
   });
 
   socket.on('disconnect', () => {
@@ -199,7 +283,9 @@ io.on('connection', (socket) => {
 // ---------------- SERVER START ----------------
 const PORT = 3000;
 server.listen(PORT, '0.0.0.0', () => {
-  console.log('\n🚀 SentinelAI Backend LIVE');
+  console.log('\n🚀 SentinelAI Enhanced Backend LIVE');
   console.log(`🌐 http://localhost:${PORT}`);
-  console.log(`🩺 Health: http://localhost:${PORT}/api/health\n`);
+  console.log(`🤖 ML Engine: http://localhost:5001`);
+  console.log(`🩺 Health: http://localhost:${PORT}/api/health`);
+  console.log(`🧠 Model Status: http://localhost:${PORT}/api/model-status\n`);
 });

@@ -12,12 +12,11 @@ pyshark.tshark.tshark.TSHARK_PATH_OVERRIDE = r"C:\Program Files\Wireshark\tshark
 logging.info("✅ TShark path set to C:\\Program Files\\Wireshark\\tshark.exe")
 
 class FlowCapture:
-    def __init__(self, interface: str, ml_engine):
+    def __init__(self, interface: str, feature_extractor):
         self.interface = interface
-        self.ml_engine = ml_engine
+        self.feature_extractor = feature_extractor
         self.capture: Optional[pyshark.LiveCapture] = None
-        self.loop = None
-        self.thread = None
+        self.logger = logging.getLogger(__name__)
 
     def start(self):
         if self.thread is not None:

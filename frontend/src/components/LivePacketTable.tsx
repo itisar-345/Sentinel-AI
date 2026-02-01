@@ -1,8 +1,7 @@
 import React from 'react';
-import { Packet } from '../types'; // Use your types/index.ts
-import { AlertTriangle, Shield } from 'lucide-react';
+import { Packet } from '../types';
+import { AlertTriangle, Shield, Info, Brain } from 'lucide-react';
 
-// === PROTOCOL → COLOR MAPPING ===
 const PROTOCOL_COLORS: Record<string, string> = {
   TCP: 'bg-emerald-600 text-white',
   UDP: 'bg-blue-600 text-white',
@@ -19,10 +18,8 @@ const getProtocolColor = (protocol: string) => {
   return PROTOCOL_COLORS[protocol.toUpperCase()] || PROTOCOL_COLORS.default;
 };
 
-// === IST TIME FORMATTER ===
 const formatISTTime = (timestamp: number) => {
   const date = new Date(timestamp);
-  // Convert to IST (UTC + 5:30)
   const istOffset = 5.5 * 60 * 60 * 1000;
   const istTime = new Date(date.getTime() + istOffset);
 
@@ -35,13 +32,13 @@ const formatISTTime = (timestamp: number) => {
   });
 };
 
-export default function LivePacketTable({
-  packets,
-  capturing,
-}: {
+interface LivePacketTableProps {
   packets: Packet[];
   capturing: boolean;
-}) {
+  onPacketSelect?: (packet: Packet) => void;
+}
+
+export default function LivePacketTable({ packets, capturing, onPacketSelect }: LivePacketTableProps) {
   if (packets.length === 0) {
     return (
       <div className="text-center text-gray-500 py-8 bg-gray-900/50 rounded-xl">
@@ -60,22 +57,18 @@ export default function LivePacketTable({
   }
 
   return (
-    <div className="overflow-x-auto max-h-64">
+    <div className="overflow-x-auto max-h-96">
       <table className="min-w-full text-sm font-mono border-collapse bg-gray-800 rounded-xl shadow-lg overflow-hidden">
         <thead>
           <tr className="bg-gradient-to-r from-cyan-600 to-purple-700 sticky top-0 text-white">
-            <th className="px-4 py-3 text-left font-semibold">Time (IST)</th>
+            <th className="px-4 py-3 text-left font-semibold">Time</th>
             <th className="px-4 py-3 text-left font-semibold">Source</th>
             <th className="px-4 py-3 text-left font-semibold">Destination</th>
             <th className="px-4 py-3 text-left font-semibold">Protocol</th>
             <th className="px-4 py-3 text-left font-semibold">Slice</th>
             <th className="px-4 py-3 text-left font-semibold">Size</th>
-            <th className="px-4 py-3 text-left font-semibold">
-              <div className="flex items-center gap-3">
-                Detection
-                
-              </div>
-            </th>
+            <th className="px-4 py-3 text-left font-semibold">Detection</th>
+            <th className="px-4 py-3 text-left font-semibold">AI</th>
           </tr>
         </thead>
         <tbody>
@@ -83,24 +76,23 @@ export default function LivePacketTable({
             const isSimulated = p.packet_data?.simulated === true;
             const isMalicious = p.isMalicious === true;
             const protoColor = getProtocolColor(p.protocol);
+            const hasExplanation = !!p.explanation;
 
             return (
               <tr
                 key={idx}
-                className={`transition-all duration-200 border-b ${
+                className={`transition-all duration-200 border-b cursor-pointer hover:bg-gray-700/50 ${
                   isMalicious
                     ? isSimulated
                       ? 'bg-purple-900/20 hover:bg-purple-900/30 border-l-4 border-l-purple-500'
                       : 'bg-red-900/20 hover:bg-red-900/30 border-l-4 border-l-red-500'
                     : 'border-gray-700 hover:bg-cyan-900/10'
                 }`}
+                onClick={() => onPacketSelect && onPacketSelect(p)}
               >
-                {/* Time in IST */}
                 <td className="px-4 py-2 text-gray-300 text-xs font-medium">
                   {formatISTTime(p.timestamp)}
                 </td>
-
-                {/* Source IP with icon */}
                 <td className="px-4 py-2">
                   <div className="flex items-center gap-1.5">
                     {isMalicious && isSimulated && (
@@ -122,13 +114,9 @@ export default function LivePacketTable({
                     </span>
                   </div>
                 </td>
-
-                {/* Destination IP */}
                 <td className="px-4 py-2 text-purple-300 font-mono text-sm">
                   {p.dstIP}
                 </td>
-
-                {/* Protocol Badge */}
                 <td className="px-4 py-2">
                   <span
                     className={`px-2.5 py-1 rounded font-bold text-xs tracking-wider ${protoColor}`}
@@ -136,8 +124,6 @@ export default function LivePacketTable({
                     {p.protocol}
                   </span>
                 </td>
-
-                {/* Network Slice Badge */}
                 <td className="px-4 py-2">
                   <span
                     className={`px-2 py-1 rounded text-white text-xs font-medium ${
@@ -151,13 +137,9 @@ export default function LivePacketTable({
                     {p.network_slice || 'eMBB'}
                   </span>
                 </td>
-
-                {/* Packet Size */}
                 <td className="px-4 py-2 text-gray-200 font-mono text-sm">
                   {p.packetSize}B
                 </td>
-
-                {/* Detection Status */}
                 <td className="px-4 py-2">
                   {isMalicious ? (
                     <div className="flex items-center gap-1.5">
@@ -190,6 +172,33 @@ export default function LivePacketTable({
                         </span>
                       )}
                     </span>
+                  )}
+                </td>
+                <td className="px-4 py-2">
+                  {hasExplanation ? (
+                    <button
+                      className="p-1.5 rounded bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all"
+                      title="View AI Explanation"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPacketSelect && onPacketSelect(p);
+                      }}
+                    >
+                      <Info className="w-3.5 h-3.5 text-white" />
+                    </button>
+                  ) : isMalicious ? (
+                    <button
+                      className="p-1.5 rounded bg-gray-700 hover:bg-gray-600 transition-colors"
+                      title="Generate AI Analysis"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onPacketSelect && onPacketSelect(p);
+                      }}
+                    >
+                      <Brain className="w-3.5 h-3.5 text-gray-400" />
+                    </button>
+                  ) : (
+                    <span className="text-gray-500 text-xs">—</span>
                   )}
                 </td>
               </tr>

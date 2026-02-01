@@ -8,45 +8,52 @@
 
 **Sentinel AI** is an enterprise-grade, AI-powered **5G DDoS Detection & Mitigation System** integrating:
 
-- **Machine Learning (Python + Flask)**
-- **Software-Defined Networking (SDN) via Ryu Controller**
-- **Mininet network emulation**
-- **React real-time monitoring dashboard**
-- **Node.js backend orchestration**
-- **Locust traffic & DDoS load testing**
+- **Machine Learning (Python + Flask)** - Ensemble models with XAI explanations
+- **Software-Defined Networking (SDN) via Ryu Controller** - Dynamic flow control
+- **Mininet network emulation** - Network topology simulation
+- **React real-time monitoring dashboard** - Live traffic visualization
+- **Node.js backend orchestration** - API server with WebSocket support
+- **Locust traffic & DDoS load testing** - Performance testing suite
 
-The system delivers **real-time attack detection**, **network slice intelligence**, and **autonomous mitigation** using OpenFlow rules.
+The system delivers **real-time attack detection**, **5G network slicing support**, and **autonomous mitigation** using OpenFlow rules, with comprehensive testing and monitoring capabilities.
 
 ---
 
 ## ⭐ Key Capabilities
 
 ### 🔥 AI-Powered Detection
-- Ensemble ML models: RandomForest, XGBoost, LightGBM, LSTM, SVM  
-- Sub-50ms real-time inference  
-- 17+ flow features extracted from Scapy/pyshark  
+- **Ensemble ML Models**: RandomForest, XGBoost, LSTM, Autoencoder
+- **Sub-50ms Inference**: Real-time packet classification
+- **17 Feature Extraction**: Flow statistics, protocol analysis, temporal patterns
+- **Explainable AI**: SHAP values, feature importance, decision reasoning
+- **Online Learning**: Continuous model adaptation
 
-### 📶 5G Network Slice Support
-- eMBB (High Bandwidth)  
-- URLLC (Low Latency)  
-- mMTC (IoT)  
+### 📶 5G Network Slice Intelligence
+- **eMBB Classification**: High-bandwidth traffic analysis
+- **URLLC Detection**: Ultra-low latency attack identification
+- **mMTC Monitoring**: Massive IoT device protection
+- **Slice Isolation**: Network segmentation security
 
 ### 🧠 Self-Healing SDN Architecture
-- Automatically blocks malicious IPs  
-- Auto-unblocks after recovery  
-- Falls back to rule-based detection if ML model fails  
+- **Automatic IP Blocking**: OpenFlow DROP rules via Ryu controller
+- **Dynamic Flow Management**: Priority-based rule insertion
+- **Auto-Recovery**: Intelligent unblocking after threat resolution
+- **Fallback Mechanisms**: Rule-based detection when ML unavailable
+- **Flow Cleanup**: Automatic expired rule removal
 
-### 🔐 SDN Controller (Ryu)
-- Dynamic flow rules  
-- DROP/FORWARD decisions  
-- IP quarantine system  
+### 🔐 Advanced SDN Controller (Ryu)
+- **REST API Integration**: `ryu.app.ofctl_rest` communication
+- **OpenFlow 1.3 Support**: Modern protocol compatibility
+- **Mininet Integration**: Network topology simulation
+- **Real-time Rule Updates**: Dynamic flow table management
+- **IP Quarantine System**: Configurable blocking timeouts
 
-### 📊 Real-Time Dashboard
-- Live traffic charts  
-- Slice classifier  
-- Blocked IP list  
-- Detection confidence  
-- ML logs & alerts  
+### 📊 Comprehensive Dashboard
+- **Live Packet Monitoring**: Real-time traffic visualization
+- **AI Explanation Panel**: Model prediction insights
+- **Multi-Chart Analytics**: Normal/malicious/simulated traffic
+- **5G Slice Performance**: Network segmentation metrics
+- **Threat Management**: Blocked IP tracking and control
 
 ---
 
@@ -56,18 +63,21 @@ The system delivers **real-time attack detection**, **network slice intelligence
 ┌─────────────────┐      ┌───────────────────┐      ┌─────────────────┐
 │   Traffic       │ ---> │  Packet Capture    │ ---> │  Feature         │
 │ (Real/Simulated)│      │ (Scapy / Pyshark) │      │ Extraction       │
+│   via Locust    │      │  + Mininet        │      │ (17 features)   │
 └─────────────────┘      └───────────────────┘      └─────────────────┘
                               │
                               ▼
 ┌─────────────────┐      ┌───────────────────┐      ┌─────────────────┐
 │ Network Slicing │ <--- │   ML Engine        │ ---> │  Backend API     │
-│ eMBB/URLLC/mMTC │      │ RandomForest etc. │      │ Node.js          │
+│ eMBB/URLLC/mMTC │      │ Ensemble Models    │      │ Node.js + WS     │
+│ Classification  │      │ + XAI Explanations│      │ (Port 3000)      │
 └─────────────────┘      └───────────────────┘      └─────────────────┘
                               │
                               ▼
 ┌─────────────────┐      ┌───────────────────┐      ┌─────────────────┐
 │ Ryu SDN         │ <--- │  Mitigation Logic │ ---> │  React Dashboard │
 │ Controller      │      │ Auto-block IPs    │      │ Real-time UI     │
+│ (Port 6633)     │      │ + Flow Rules      │      │ (Port 5173)      │
 └─────────────────┘      └───────────────────┘      └─────────────────┘
 ```
 
@@ -76,13 +86,70 @@ The system delivers **real-time attack detection**, **network slice intelligence
 ## 🗂 Repository Structure
 
 ```
-Ly-Project/
+Sentinel-AI/
 │
 ├── frontend/            # React Dashboard (Port 5173)
-├── backend/             # Node.js API Server (Port 3000)
-├── model/               # ML Engine + Flask API (Port 5001)
+│   ├── src/
+│   │   ├── components/  # React Components (Header, Stats, Charts, etc.)
+│   │   ├── services/    # API Service Layer
+│   │   ├── types/       # TypeScript Type Definitions
+│   │   ├── App.tsx      # Main Application
+│   │   └── main.tsx     # Entry Point
+│   └── public/          # Static Assets
 │
-├── ryu-venv/            # Python env for Ryu SDN Controller
+├── backend/             # Node.js API Server (Port 3000)
+│   ├── controllers/     # Route Controllers
+│   ├── middleware/      # Custom Middleware
+│   ├── routes/          # Express Routes
+│   ├── services/        # Business Logic Services
+│   ├── tests/           # Unit, Integration, Performance Tests
+│   └── utils/           # Utility Functions
+│
+├── model/               # ML Engine + Flask API (Port 5001)
+│   ├── app/             # Flask Application
+│   │   ├── app.py                   # Main Flask Application
+│   │   ├── explainable_ai.py         # XAI for model predictions
+│   │   ├── feature_extraction.py     # Packet feature extraction
+│   │   ├── fiveg_core_integration.py # 5G Core integration
+│   │   ├── flow_capture.py           # Network flow capture
+│   │   ├── mitigation_engine.py      # Attack mitigation logic
+│   │   ├── ml_detection.py           # ML detection engine
+│   │   ├── nas_analyzer.py           # Neural Architecture Search
+│   │   ├── network_slicing.py        # 5G network slicing
+│   │   ├── online_learning.py        # Online model updates
+│   │   ├── performance_cache.py      # Performance optimization
+│   │   ├── sdn_controller.py         # SDN Ryu controller
+│   │   └── test/                     # Model training & testing
+│   │       ├── compare_models.py     # Model comparison
+│   │       ├── manual_block_test.py  # Manual block tests
+│   │       ├── test_enhanced_model.py
+│   │       ├── test_ryu_connection.py
+│   │       ├── train_model.py        # Model training
+│   │       └── training.py           # Training utilities
+│   ├── models/          # Trained Models (.keras, .pkl, .json)
+│   │   ├── 5g_ddos_dataset.csv       # Training dataset
+│   │   ├── 5g_ddos_scaler.pkl        # Feature scaler
+│   │   ├── 5g_feature_names.pkl      # Feature names
+│   │   ├── autoencoder.keras         # Autoencoder model
+│   │   ├── ensemble_voting.pkl       # Voting ensemble
+│   │   ├── inference.py              # Inference utilities
+│   │   ├── lstm.keras                # LSTM model
+│   │   ├── mininet.py                # Mininet topology
+│   │   ├── model_metadata.json       # Model metadata
+│   │   ├── model_performance_summary.csv
+│   │   ├── random_forest.pkl         # Random Forest model
+│   │   ├── rf_feature_importance.csv
+│   │   ├── shap_values.csv           # SHAP values
+│   │   ├── xgboost.json              # XGBoost model
+│   │   └── xgboost.pkl               # XGBoost model
+│   ├── requirements.txt   # Python Dependencies
+│   ├── setup_windows.bat  # Windows setup script
+│   └── TENSORFLOW_FIX_WINDOWS.md    # TensorFlow Windows fix
+│
+├── DDOS/                # Load Testing Scripts (Locust)
+│   └── locustfile.py    # DDoS Simulation Tests
+│
+├── .gitignore
 ├── README.md
 └── LICENSE
 ```
@@ -132,8 +199,7 @@ ryu-manager ryu.app.simple_switch_13 ryu.app.ofctl_rest
 
 ### **Terminal 2 — Mininet Topology**
 ```bash
-sudo mn --topo single,3 --mac --switch ovsk \
---controller=remote,ip=127.0.0.1,port=6633
+sudo mn --topo single,3 --mac --switch ovsk --controller=remote,ip=127.0.0.1,port=6633
 ```
 
 ### **Terminal 3 — Backend**
@@ -195,43 +261,77 @@ http://localhost:8089
 
 ## 🔐 SDN Flow Control (Ryu)
 
-The backend issues:
+The SDN controller manages network traffic through dynamic flow rules:
 
-- **DROP rules** for blocking malicious IPs
-- **ALLOW rules** for clean traffic
-- **Flow cleanup** after threat resolves
+- **DROP rules** for blocking malicious IPs via OpenFlow
+- **FORWARD rules** for allowing legitimate traffic
+- **Flow table management** with priority-based rule insertion
+- **Automatic cleanup** of expired flow rules
+- **IP quarantine system** with configurable timeout
 
-Protocols used:
-
-- OpenFlow 1.3
-- REST API of `ryu.app.ofctl_rest`
+**Integration Points:**
+- Ryu Controller REST API (`ryu.app.ofctl_rest`)
+- OpenFlow 1.3 protocol support
+- Mininet topology integration
+- Real-time flow rule updates from ML engine
 
 ---
 
 ## 🔄 Self-Healing Pipeline
 
 ```
-DDoS Detected
+Packet Received → Feature Extraction (17 features)
      ↓
-Block IP (OpenFlow DROP rule)
+ML Ensemble Prediction (RandomForest + XGBoost + LSTM)
      ↓
-Monitor traffic for recovery
+Confidence Threshold Check (>80% = Attack)
      ↓
-Auto-unblock IP
+DDoS Detected → SDN Controller API Call
      ↓
-System returns to stable state
+OpenFlow DROP Rule Applied (IP Blocked)
+     ↓
+Traffic Monitoring for Recovery Patterns
+     ↓
+Auto-Unblock IP (Flow Rule Removed)
+     ↓
+System Returns to Normal State
+     ↓
+Online Learning Updates Model Weights
 ```
 
 ---
 
 ## 📊 Dashboard Features
 
-- Live packet monitoring
-- Threat alerts
-- Real-time ML predictions
-- Slice classification
-- Blocked IP list
-- System health & status
+**Real-Time Monitoring:**
+- Live packet capture and analysis
+- Real-time traffic charts (normal/malicious/simulated)
+- Packet-per-second metrics and statistics
+- Network slice performance monitoring
+
+**AI-Powered Insights:**
+- ML model confidence scores
+- Explainable AI (XAI) predictions with SHAP values
+- Feature importance visualization
+- Detection reason explanations
+
+**Network Security:**
+- Blocked IP management with auto-unblock
+- Threat level classification (high/medium/low)
+- IP quarantine status tracking
+- Mitigation action history
+
+**5G Network Slicing:**
+- eMBB, URLLC, mMTC slice classification
+- Slice-specific traffic analysis
+- Network performance metrics
+- Slice isolation monitoring
+
+**System Health:**
+- Backend/ML service connectivity status
+- Model performance metrics
+- System resource monitoring
+- Alert and notification system
 
 ---
 

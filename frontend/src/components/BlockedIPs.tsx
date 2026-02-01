@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, Unlock } from "lucide-react";
+import { Shield, Unlock, Brain } from "lucide-react";
 
 type ThreatLevel = "high" | "medium" | "low" | "simulated";
 
@@ -10,10 +10,18 @@ interface BlockedIP {
   threatLevel?: ThreatLevel;
   mitigation?: string;
   isSimulated?: boolean;
+  confidence?: number;
+  explanation?: any; // NEW
+  model_used?: string; // NEW
+  network_slice?: string; // NEW
 }
 
-export default function BlockedIPs({ blockedIPs = [] }: { blockedIPs?: BlockedIP[] }) {
-  // ensure we always have an array
+interface BlockedIPsProps {
+  blockedIPs?: BlockedIP[];
+  onExplain?: (ipData: BlockedIP) => void; // NEW
+}
+
+export default function BlockedIPs({ blockedIPs = [], onExplain }: BlockedIPsProps) {
   const list = Array.isArray(blockedIPs) ? blockedIPs : [];
 
   const unblock = async (ip?: string) => {
@@ -69,10 +77,18 @@ export default function BlockedIPs({ blockedIPs = [] }: { blockedIPs?: BlockedIP
   return (
     <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
       <div className="p-4 bg-gradient-to-r from-red-900/50 to-purple-900/50 border-b border-gray-800">
-        <h3 className="text-lg font-bold flex items-center gap-2">
-          <Shield className="w-5 h-5 text-red-400" />
-          Blocked Attackers ({list.length})
-        </h3>
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-bold flex items-center gap-2">
+            <Shield className="w-5 h-5 text-red-400" />
+            Blocked Attackers ({list.length})
+          </h3>
+          {list.some(ip => ip.explanation) && (
+            <span className="text-sm text-gray-300 flex items-center gap-1">
+              <Brain className="w-4 h-4" />
+              AI Analysis Available
+            </span>
+          )}
+        </div>
       </div>
 
       {list.length === 0 ? (
@@ -89,17 +105,20 @@ export default function BlockedIPs({ blockedIPs = [] }: { blockedIPs?: BlockedIP
                 <th className="px-4 py-3">IP Address</th>
                 <th className="px-4 py-3">Threat</th>
                 <th className="px-4 py-3">Reason</th>
+                <th className="px-4 py-3">Slice</th>
+                <th className="px-4 py-3">AI</th>
                 <th className="px-4 py-3">Time</th>
-                <th className="px-4 py-3">Action</th>
+                <th className="px-4 py-3">Actions</th>
               </tr>
             </thead>
             <tbody>
               {list.map((item, idx) => {
-                // defensive defaults
                 const ip = item && typeof item.ip === "string" && item.ip.length > 0 ? item.ip : `unknown-${idx}`;
                 const threat = item && (item.threatLevel as ThreatLevel);
                 const reason = item && item.reason ? item.reason : "DDoS Flood";
                 const time = formatTime(item && item.timestamp);
+                const hasExplanation = !!item.explanation;
+                const confidence = item.confidence || 0;
 
                 return (
                   <tr
@@ -107,25 +126,63 @@ export default function BlockedIPs({ blockedIPs = [] }: { blockedIPs?: BlockedIP
                     className="border-b border-gray-800 hover:bg-gray-800/50 transition-colors"
                   >
                     <td className="px-4 py-3 font-mono text-red-400 text-sm">{ip}</td>
-                    <td className="px-4 py-3">{renderThreatBadge(threat)}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex flex-col gap-1">
+                        {renderThreatBadge(threat)}
+                        {confidence > 0 && (
+                          <span className="text-xs text-gray-400">
+                            {Math.round(confidence * 100)}% confidence
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-gray-300 text-sm max-w-xs truncate" title={reason}>
                       {reason}
                     </td>
+                    <td className="px-4 py-3">
+                      {item.network_slice ? (
+                        <span className={`px-2 py-1 rounded text-xs ${
+                          item.network_slice === 'URLLC' ? 'bg-blue-900/50 text-blue-300' :
+                          item.network_slice === 'mMTC' ? 'bg-green-900/50 text-green-300' :
+                          'bg-purple-900/50 text-purple-300'
+                        }`}>
+                          {item.network_slice}
+                        </span>
+                      ) : (
+                        <span className="text-gray-500 text-xs">—</span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3">
+                      {hasExplanation ? (
+                        <button
+                          onClick={() => onExplain && onExplain(item)}
+                          className="flex items-center gap-1 px-3 py-1.5 rounded text-xs bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-all"
+                          title="View AI Analysis"
+                        >
+                          <Brain className="w-3 h-3" />
+                          Explain
+                        </button>
+                      ) : (
+                        <span className="text-gray-500 text-xs">No AI</span>
+                      )}
+                    </td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{time}</td>
                     <td className="px-4 py-3">
-                      <button
-                        onClick={() => unblock(ip)}
-                        disabled={item.isSimulated}
-                        className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs transition-colors ${
-                          item.isSimulated 
-                            ? 'bg-gray-700 text-gray-400 cursor-not-allowed' 
-                            : 'bg-blue-600 hover:bg-blue-700'
-                        }`}
-                        title={item.isSimulated ? 'Simulated attacks cannot be unblocked' : 'Unblock IP'}
-                      >
-                        <Unlock className="w-3 h-3" />
-                        {item.isSimulated ? 'Simulated' : 'Unblock'}
-                      </button>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => unblock(ip)}
+                          disabled={item.isSimulated}
+                          className={`flex items-center gap-1 px-3 py-1.5 rounded text-xs transition-colors ${
+                            item.isSimulated 
+                              ? 'bg-gray-700 text-gray-400 cursor-not-allowed' 
+                              : 'bg-blue-600 hover:bg-blue-700'
+                          }`}
+                          title={item.isSimulated ? 'Simulated attacks cannot be unblocked' : 'Unblock IP'}
+                        >
+                          <Unlock className="w-3 h-3" />
+                          {item.isSimulated ? 'Simulated' : 'Unblock'}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 );

@@ -1,10 +1,36 @@
-Flask==3.1.1
-Flask-CORS==6.0.1
-numpy==2.3.1
-scikit-learn==1.4.2
-pandas>=1.3.0
-joblib==1.5.1
-requests==2.32.3
-xgboost>=1.6.0
-lightgbm>=3.3.0
-tensorflow>=2.10.0
+# Core Dependencies
+Flask>=2.3.0
+Flask-CORS>=4.0.0
+scapy>=2.5.0
+pyshark>=0.5.0
+requests>=2.31.0
+
+# Machine Learning Elite Stack
+# IMPORTANT: Use tensorflow-cpu for Windows to avoid DLL issues
+# tensorflow-cpu 2.13.0 is stable with Python 3.11 on Windows
+tensorflow-cpu>=2.13.0
+# Fallback to standard tensorflow if cpu version fails on some systems
+# tensorflow>=2.13.0
+keras>=2.13.0
+scikit-learn>=1.3.0
+xgboost>=1.7.0
+lightgbm>=4.0.0
+joblib>=1.3.0
+pandas>=2.0.0
+numpy>=1.24.0
+
+# Explainable AI
+shap>=0.42.0
+lime>=0.2.0
+alibi-detect>=0.11.0
+
+# 5G Integration
+open5gs-client>=0.1.0
+pysctp>=0.7.0
+
+# Performance
+psutil>=5.9.0
+ujson>=5.7.0
+
+# Development
+python-dotenv>=1.0.0
