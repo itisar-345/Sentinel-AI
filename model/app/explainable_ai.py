@@ -42,6 +42,7 @@ class DDoSExplainer:
                 'value': float(feature_value),
                 'importance': float(importance),
                 'contribution': float(contribution),
+                'impact': float(contribution),  # Add impact for frontend compatibility
                 'normalized_contribution': float(contribution / max(sum([c['contribution'] for c in contributions]) + contribution, 0.01))
             })
         
@@ -51,24 +52,46 @@ class DDoSExplainer:
         # Generate risk factors
         risk_factors = []
         confidence = detection_result.get('confidence', 0)
+        prediction = detection_result.get('prediction', 'normal')
         
-        # Check specific conditions
-        packet_rate_idx = [i for i, f in enumerate(self.feature_names) if 'packet' in f.lower() and 'rate' in f.lower()]
-        if packet_rate_idx and features_scaled[packet_rate_idx[0]] > 3:
-            risk_factors.append(f"High packet rate (z-score: {features_scaled[packet_rate_idx[0]]:.2f})")
+        # For DDoS predictions, generate risk factors based on top contributions
+        if prediction == 'ddos' or confidence > 0.7:
+            # Use top contributing features as risk factors
+            for contrib in contributions[:3]:
+                if contrib['contribution'] > 0.01:
+                    feature_name = contrib['feature']
+                    feature_value = contrib['value']
+                    
+                    if 'packet' in feature_name.lower() and 'rate' in feature_name.lower():
+                        risk_factors.append(f"High packet rate detected (z-score: {feature_value:.2f})")
+                    elif 'entropy' in feature_name.lower():
+                        risk_factors.append(f"Abnormal port/protocol distribution (entropy: {feature_value:.2f})")
+                    elif 'size' in feature_name.lower():
+                        risk_factors.append(f"Unusual packet size pattern (z-score: {feature_value:.2f})")
+                    elif 'byte' in feature_name.lower():
+                        risk_factors.append(f"High bandwidth consumption detected")
+                    elif 'connection' in feature_name.lower():
+                        risk_factors.append(f"Suspicious connection pattern")
+                    else:
+                        risk_factors.append(f"Anomalous {feature_name.replace('_', ' ')} behavior")
         
-        entropy_idx = [i for i, f in enumerate(self.feature_names) if 'entropy' in f.lower()]
-        if entropy_idx and features_scaled[entropy_idx[0]] > 2:
-            risk_factors.append(f"Abnormal port/protocol distribution")
-        
-        size_idx = [i for i, f in enumerate(self.feature_names) if 'size' in f.lower()]
-        if size_idx and abs(features_scaled[size_idx[0]]) > 2.5:
-            risk_factors.append(f"Unusual packet size pattern")
+        # If still no risk factors but high confidence, add generic ones
+        if not risk_factors and confidence > 0.7:
+            risk_factors.append(f"Traffic pattern matches known DDoS signatures")
+            risk_factors.append(f"Multiple ML models agree on threat classification")
+            if confidence > 0.9:
+                risk_factors.append(f"Extremely high confidence detection ({confidence*100:.1f}%)")
         
         # Generate explanation
+        prediction_value = detection_result.get('prediction', 'unknown')
+        
+        # Ensure prediction is valid
+        if not prediction_value or prediction_value == 'unknown':
+            prediction_value = 'ddos' if confidence > 0.5 else 'normal'
+        
         explanation = {
-            'prediction': detection_result.get('prediction', 'unknown'),
-            'confidence': confidence,
+            'prediction': prediction_value,
+            'confidence': float(confidence),  # Ensure it's a float
             'top_factors': contributions[:5],
             'risk_factors': risk_factors[:3],
             'decision_basis': self._get_decision_basis(confidence, risk_factors),

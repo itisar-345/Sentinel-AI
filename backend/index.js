@@ -121,7 +121,7 @@ app.post('/api/live-packet', (req, res) => {
 
   // Log with enhanced details
   if (packet.explanation) {
-    console.log(`📡 [AI] Packet from ${packet.srcIP} → Confidence: ${packet.confidence || 0}`);
+    console.log(`📡 [AI] Packet from ${packet.srcIP} → Confidence: ${packet.confidence || 0} | Explanation:`, JSON.stringify(packet.explanation).substring(0, 100));
   } else {
     console.log(`📡 [${packetCount}] Packet from ${packet.srcIP || 'unknown'} → ${packet.dstIP || 'unknown'}`);
   }

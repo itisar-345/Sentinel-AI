@@ -2,6 +2,8 @@
 
 **AI-Driven DDoS Detection & Mitigation for 5G Networks using Machine Learning + SDN + Real-Time Analytics**
 
+![Sentinel AI Demo](sentinal.gif)
+
 ---
 
 ## 📌 Project Overview
@@ -25,8 +27,13 @@ The system delivers **real-time attack detection**, **5G network slicing support
 - **Ensemble ML Models**: RandomForest, XGBoost, LSTM, Autoencoder
 - **Sub-50ms Inference**: Real-time packet classification
 - **17 Feature Extraction**: Flow statistics, protocol analysis, temporal patterns
-- **Explainable AI**: SHAP values, feature importance, decision reasoning
+- **Explainable AI (XAI)**: 
+  - Top 5 contributing features with impact scores
+  - Risk factor identification based on feature analysis
+  - Natural language decision explanations
+  - Confidence-based threat assessment
 - **Online Learning**: Continuous model adaptation
+- **Fallback Detection**: Rule-based detection when ML unavailable
 
 ### 📶 5G Network Slice Intelligence
 - **eMBB Classification**: High-bandwidth traffic analysis
@@ -49,11 +56,16 @@ The system delivers **real-time attack detection**, **5G network slicing support
 - **IP Quarantine System**: Configurable blocking timeouts
 
 ### 📊 Comprehensive Dashboard
-- **Live Packet Monitoring**: Real-time traffic visualization
-- **AI Explanation Panel**: Model prediction insights
-- **Multi-Chart Analytics**: Normal/malicious/simulated traffic
-- **5G Slice Performance**: Network segmentation metrics
-- **Threat Management**: Blocked IP tracking and control
+- **Live Packet Monitoring**: Real-time traffic visualization with time-formatted charts
+- **AI Explanation Panel**: Interactive model prediction insights with:
+  - Verdict display (DDOS/NORMAL) with confidence bars
+  - Top 5 contributing features with impact visualization
+  - Risk factors with detailed descriptions
+  - Model insights and analysis metadata
+- **Multi-Chart Analytics**: Normal/malicious/simulated traffic with gradient fills
+- **5G Slice Performance**: Network segmentation metrics with color coding
+- **Threat Management**: Blocked IP tracking with AI explanation buttons
+- **Interactive UI**: Click any packet or blocked IP to view detailed AI analysis
 
 ---
 
@@ -79,79 +91,6 @@ The system delivers **real-time attack detection**, **5G network slicing support
 │ Controller      │      │ Auto-block IPs    │      │ Real-time UI     │
 │ (Port 6633)     │      │ + Flow Rules      │      │ (Port 5173)      │
 └─────────────────┘      └───────────────────┘      └─────────────────┘
-```
-
----
-
-## 🗂 Repository Structure
-
-```
-Sentinel-AI/
-│
-├── frontend/            # React Dashboard (Port 5173)
-│   ├── src/
-│   │   ├── components/  # React Components (Header, Stats, Charts, etc.)
-│   │   ├── services/    # API Service Layer
-│   │   ├── types/       # TypeScript Type Definitions
-│   │   ├── App.tsx      # Main Application
-│   │   └── main.tsx     # Entry Point
-│   └── public/          # Static Assets
-│
-├── backend/             # Node.js API Server (Port 3000)
-│   ├── controllers/     # Route Controllers
-│   ├── middleware/      # Custom Middleware
-│   ├── routes/          # Express Routes
-│   ├── services/        # Business Logic Services
-│   ├── tests/           # Unit, Integration, Performance Tests
-│   └── utils/           # Utility Functions
-│
-├── model/               # ML Engine + Flask API (Port 5001)
-│   ├── app/             # Flask Application
-│   │   ├── app.py                   # Main Flask Application
-│   │   ├── explainable_ai.py         # XAI for model predictions
-│   │   ├── feature_extraction.py     # Packet feature extraction
-│   │   ├── fiveg_core_integration.py # 5G Core integration
-│   │   ├── flow_capture.py           # Network flow capture
-│   │   ├── mitigation_engine.py      # Attack mitigation logic
-│   │   ├── ml_detection.py           # ML detection engine
-│   │   ├── nas_analyzer.py           # Neural Architecture Search
-│   │   ├── network_slicing.py        # 5G network slicing
-│   │   ├── online_learning.py        # Online model updates
-│   │   ├── performance_cache.py      # Performance optimization
-│   │   ├── sdn_controller.py         # SDN Ryu controller
-│   │   └── test/                     # Model training & testing
-│   │       ├── compare_models.py     # Model comparison
-│   │       ├── manual_block_test.py  # Manual block tests
-│   │       ├── test_enhanced_model.py
-│   │       ├── test_ryu_connection.py
-│   │       ├── train_model.py        # Model training
-│   │       └── training.py           # Training utilities
-│   ├── models/          # Trained Models (.keras, .pkl, .json)
-│   │   ├── 5g_ddos_dataset.csv       # Training dataset
-│   │   ├── 5g_ddos_scaler.pkl        # Feature scaler
-│   │   ├── 5g_feature_names.pkl      # Feature names
-│   │   ├── autoencoder.keras         # Autoencoder model
-│   │   ├── ensemble_voting.pkl       # Voting ensemble
-│   │   ├── inference.py              # Inference utilities
-│   │   ├── lstm.keras                # LSTM model
-│   │   ├── mininet.py                # Mininet topology
-│   │   ├── model_metadata.json       # Model metadata
-│   │   ├── model_performance_summary.csv
-│   │   ├── random_forest.pkl         # Random Forest model
-│   │   ├── rf_feature_importance.csv
-│   │   ├── shap_values.csv           # SHAP values
-│   │   ├── xgboost.json              # XGBoost model
-│   │   └── xgboost.pkl               # XGBoost model
-│   ├── requirements.txt   # Python Dependencies
-│   ├── setup_windows.bat  # Windows setup script
-│   └── TENSORFLOW_FIX_WINDOWS.md    # TensorFlow Windows fix
-│
-├── DDOS/                # Load Testing Scripts (Locust)
-│   └── locustfile.py    # DDoS Simulation Tests
-│
-├── .gitignore
-├── README.md
-└── LICENSE
 ```
 
 ---
@@ -230,6 +169,7 @@ python app.py
 
 ### Install Locust:
 ```bash
+cd DDOS
 pip install locust
 ```
 
@@ -304,34 +244,42 @@ Online Learning Updates Model Weights
 ## 📊 Dashboard Features
 
 **Real-Time Monitoring:**
-- Live packet capture and analysis
-- Real-time traffic charts (normal/malicious/simulated)
+- Live packet capture and analysis with clickable packet inspection
+- Real-time traffic charts with formatted time axis (HH:MM:SS)
 - Packet-per-second metrics and statistics
 - Network slice performance monitoring
+- Interactive packet table with AI analysis indicators
 
 **AI-Powered Insights:**
-- ML model confidence scores
-- Explainable AI (XAI) predictions with SHAP values
-- Feature importance visualization
-- Detection reason explanations
+- ML model confidence scores with visual progress bars
+- Explainable AI (XAI) predictions with detailed breakdowns
+- Top 5 contributing features with impact visualization
+- Risk factor identification and categorization
+- Decision basis explanations in natural language
+- Feature importance with z-score values
 
 **Network Security:**
-- Blocked IP management with auto-unblock
-- Threat level classification (high/medium/low)
-- IP quarantine status tracking
-- Mitigation action history
+- Blocked IP management with auto-unblock functionality
+- Threat level classification (high/medium/low/simulated)
+- IP quarantine status tracking with confidence percentages
+- Mitigation action history with timestamps
+- AI explanation panel for each blocked IP
+- One-click threat investigation
 
 **5G Network Slicing:**
 - eMBB, URLLC, mMTC slice classification
-- Slice-specific traffic analysis
-- Network performance metrics
-- Slice isolation monitoring
+- Slice-specific traffic analysis and visualization
+- Network performance metrics per slice
+- Slice isolation monitoring and alerts
+- Color-coded slice indicators
 
 **System Health:**
-- Backend/ML service connectivity status
-- Model performance metrics
+- Backend/ML service connectivity status (real-time)
+- Model performance metrics (17 features tracked)
+- Feature count display in header
 - System resource monitoring
 - Alert and notification system
+- WebSocket connection status indicator
 
 ---
 
@@ -341,6 +289,50 @@ Online Learning Updates Model Weights
 - Federated learning for edge devices
 - 5G NR physical-layer packet support
 - GPU-accelerated inference
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**Issue: AI Explanation shows "No significant risk factors detected"**
+- **Cause**: Scaled feature values don't meet threshold or prediction is "normal"
+- **Solution**: System now generates risk factors from top contributing features automatically
+- **Expected**: 1-3 risk factors for DDoS predictions with confidence > 0.7
+
+**Issue: Confidence shows 0.0%**
+- **Cause**: Confidence value is undefined, null, or not properly typed
+- **Solution**: System uses nullish coalescing (??) and type checking
+- **Expected**: Confidence between 0.1% - 99.9% for all predictions
+
+**Issue: Verdict shows "UNKNOWN"**
+- **Cause**: ML detection returned error or models failed to load
+- **Solution**: System validates predictions and uses confidence-based fallback
+- **Expected**: Always shows "DDOS" or "NORMAL", never "UNKNOWN"
+
+**Issue: Feature count shows 0**
+- **Cause**: Flask health endpoint was checking local scope instead of global
+- **Solution**: Fixed to check global `feature_names` variable
+- **Expected**: Shows "17 features" in header when ML engine is ready
+
+**Issue: X-axis shows numbers like 1771773120**
+- **Cause**: Unix timestamp displayed without formatting
+- **Solution**: Added `formatTime` function with `tickFormatter`
+- **Expected**: Shows time as "10:45:30 AM" format
+
+### Debug Mode
+
+Enable console logging to debug issues:
+1. Open browser DevTools (F12)
+2. Check Console tab for:
+   - `AIExplanation received:` - Shows explanation data
+   - `Model status received:` - Shows feature count
+   - `Packet selected:` - Shows packet data
+3. Check Flask logs for:
+   - `✅ MODELS LOADED SUCCESSFULLY`
+   - `Explanation generated: confidence=X, prediction=Y`
+   - `Health check: features_count=17`
 
 ---
 

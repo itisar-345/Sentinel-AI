@@ -18,15 +18,24 @@ interface AIExplanationProps {
 }
 
 export default function AIExplanation({ explanation, onClose }: AIExplanationProps) {
+  // Debug log
+  console.log('AIExplanation received:', explanation);
+  console.log('Prediction value:', explanation?.prediction, 'Type:', typeof explanation?.prediction);
+  console.log('Confidence value:', explanation?.confidence, 'Type:', typeof explanation?.confidence);
+  
   // Ensure we have safe defaults
   const safeExplanation = {
-    prediction: explanation?.prediction || 'normal',
-    confidence: explanation?.confidence || 0.5,
+    prediction: (explanation?.prediction && explanation.prediction.trim()) || 'normal',
+    confidence: typeof explanation?.confidence === 'number' ? explanation.confidence : 0.5,
     top_factors: explanation?.top_factors || [],
     risk_factors: explanation?.risk_factors || [],
     decision_basis: explanation?.decision_basis || 'No explanation available',
-    model_confidence: explanation?.model_confidence || `${(explanation?.confidence || 0.5) * 100}%`
+    model_confidence: explanation?.model_confidence || `${((typeof explanation?.confidence === 'number' ? explanation.confidence : 0.5) * 100).toFixed(1)}%`
   };
+  
+  console.log('safeExplanation processed:', safeExplanation);
+  console.log('Risk factors:', safeExplanation.risk_factors, 'Count:', safeExplanation.risk_factors.length);
+  console.log('Prediction for display:', safeExplanation.prediction);
 
   const isDDoS = safeExplanation.prediction.toLowerCase() === 'ddos';
 

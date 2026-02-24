@@ -24,6 +24,11 @@ interface Props {
 export default function TrafficChart({ data }: Props) {
   const hasMalicious = data.some((d) => d.maliciousPps > 0);
 
+  const formatTime = (timestamp: number) => {
+    const date = new Date(timestamp * 1000);
+    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+
   return (
     <div className="bg-gray-900 rounded-2xl p-6 border border-gray-800">
       <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
@@ -49,6 +54,7 @@ export default function TrafficChart({ data }: Props) {
             <CartesianGrid strokeDasharray="3 3" stroke="#2d3748" vertical={false} />
             <XAxis
               dataKey="time"
+              tickFormatter={formatTime}
               tick={{ fill: '#a0aec0', fontSize: 12 }}
               axisLine={{ stroke: '#2d3748' }}
               tickLine={{ stroke: '#2d3748' }}
@@ -73,7 +79,7 @@ export default function TrafficChart({ data }: Props) {
                 if (!active || !payload?.length) return null;
                 return (
                   <div className="bg-gray-800 p-3 border border-gray-700 rounded-lg shadow-xl">
-                    <p className="text-gray-400 text-sm mb-1">Time: {label}</p>
+                    <p className="text-gray-400 text-sm mb-1">Time: {formatTime(label as number)}</p>
                     {payload.map((entry, i) => (
                       <div key={i} className="flex items-center">
                         <div

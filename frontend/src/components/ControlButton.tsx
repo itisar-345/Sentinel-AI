@@ -12,13 +12,13 @@ export default function ControlButton({ capturing, onToggle }: Props) {
     <button
       onClick={onToggle}
       className={clsx(
-        'px-8 py-4 md:py-6 rounded-2xl text-xl md:text-2xl font-extrabold transition-transform transform hover:scale-105 shadow-2xl flex items-center gap-2 h-fit',
+        'px-6 py-3 md:py-6 rounded-xl text-xl md:text-xl font-extrabold transition-transform transform hover:scale-105 shadow-2xl flex items-center gap-2 h-fit',
         capturing
-          ? 'bg-red-600 hover:bg-red-700 text-white border-2 border-red-300'
-          : 'bg-blue-600 hover:bg-blue-700 text-white border-2 border-blue-300'
+          ? 'bg-red-600 hover:bg-red-500 text-white border-1 border-red-200'
+          : 'bg-blue-600 hover:bg-blue-500 text-white border-1 border-blue-200'
       )}
     >
-      <Shield className="w-6 h-6 md:w-8 md:h-8" />
+      <Shield className="w-4 h-4 md:w-6 md:h-6" />
       {capturing ? 'STOP CAPTURE' : 'START CAPTURE'}
     </button>
   );

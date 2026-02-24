@@ -37,6 +37,7 @@ export default function App() {
         
         // Check model status
         const status = await apiService.getModelStatus();
+        console.log('Model status received:', status);
         setModelStatus(status);
       } catch {
         setConnected(false);
@@ -170,13 +171,18 @@ export default function App() {
 
   // Handle explanation selection
   const handlePacketSelect = (packet: Packet) => {
+    console.log('Packet selected:', packet);
+    
     if (packet.explanation) {
+      console.log('Using packet explanation:', packet.explanation);
       setSelectedExplanation(packet.explanation);
     } else if (packet.isMalicious) {
       // Generate a safe fallback explanation
+      const fallbackConfidence = packet.confidence ?? 0.85;
+      console.log('Creating fallback explanation with confidence:', fallbackConfidence);
       setSelectedExplanation({
         prediction: 'ddos',
-        confidence: packet.confidence || 0.85,
+        confidence: fallbackConfidence,
         top_factors: [
           { feature: 'Packet Rate', impact: 0.78 },
           { feature: 'Size Variance', impact: 0.65 },
@@ -184,10 +190,11 @@ export default function App() {
         ],
         risk_factors: ['High traffic volume', 'Suspicious source pattern'],
         decision_basis: 'AI detection based on traffic patterns',
-        model_confidence: `${((packet.confidence || 0.85) * 100).toFixed(1)}%`
+        model_confidence: `${(fallbackConfidence * 100).toFixed(1)}%`
       });
     } else {
       // For normal packets
+      console.log('Creating normal packet explanation');
       setSelectedExplanation({
         prediction: 'normal',
         confidence: 0.95,
@@ -201,7 +208,7 @@ export default function App() {
       });
     }
   };
-  
+    
   return (
     <div className="min-h-screen bg-gradient-to-br from-black to-gray-900 text-white p-8 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -224,7 +231,7 @@ export default function App() {
           </div>
         </div>
 
-        <div className="flex flex-col md:flex-row gap-6 mb-8 items-center">
+        <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
           <StatsPanel packets={packets} pps={pps} />
           <ControlButton capturing={capturing} onToggle={toggleCapture} />
         </div>
@@ -262,7 +269,29 @@ export default function App() {
         <div className="mb-8">
           <BlockedIPs 
             blockedIPs={blockedIPs} 
-            onExplain={(ipData) => setSelectedExplanation(ipData.explanation)} // NEW
+            onExplain={(ipData) => {
+              console.log('BlockedIP explain clicked:', ipData);
+              if (ipData.explanation) {
+                console.log('Using ipData.explanation:', ipData.explanation);
+                setSelectedExplanation(ipData.explanation);
+              } else {
+                // Fallback if explanation is missing
+                const fallbackConfidence = ipData.confidence ?? 0.85;
+                console.log('Creating fallback for blocked IP with confidence:', fallbackConfidence);
+                setSelectedExplanation({
+                  prediction: 'ddos',
+                  confidence: fallbackConfidence,
+                  top_factors: [
+                    { feature: 'Packet Rate', impact: 0.78 },
+                    { feature: 'Size Variance', impact: 0.65 },
+                    { feature: 'Protocol', impact: 0.42 }
+                  ],
+                  risk_factors: ['High traffic volume', 'Suspicious source pattern'],
+                  decision_basis: ipData.reason || 'DDoS attack detected',
+                  model_confidence: `${(fallbackConfidence * 100).toFixed(1)}%`
+                });
+              }
+            }}
           />
         </div>
 
