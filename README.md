@@ -187,15 +187,33 @@ http://localhost:8089
 
 ## 🧠 Machine Learning Models Included
 
-| Model               | Purpose                     |
-| ------------------- | --------------------------- |
-| Random Forest       | Primary classifier          |
-| XGBoost             | Gradient boosted accuracy   |
-| LightGBM            | Fast, memory-efficient      |
-| LSTM                | Temporal behavior detection |
-| SVM                 | Boundary-based detection    |
-| Logistic Regression | Baseline                    |
-| KNN                 | Similarity detection        |
+**Trained Models (from mininet.py):**
+
+| Model               | File                          | Purpose                                    |
+| ------------------- | ----------------------------- | ------------------------------------------ |
+| Random Forest       | `randomforest_enhanced.pkl`   | Primary ensemble classifier (200 trees)    |
+| XGBoost             | `xgboost_enhanced.json`       | Gradient boosting with L1/L2 regularization|
+| LightGBM            | `lightgbm_enhanced.txt`       | Fast, memory-efficient gradient boosting   |
+| LSTM                | `lstm_model_enhanced.keras`   | Deep learning for temporal attack patterns |
+| SVM                 | `svm_enhanced.pkl`            | Support Vector Machine for classification  |
+| Gradient Boosting   | `gradient_boosting_enhanced.pkl` | Traditional boosting approach           |
+| Logistic Regression | `logistic_regression_enhanced.pkl` | Linear baseline model                 |
+| KNN                 | `knn_enhanced.pkl`            | K-Nearest Neighbors similarity detection   |
+| Autoencoder         | `autoencoder_elite.keras`     | Unsupervised anomaly detection (from mininet.py) |
+| Voting Ensemble     | `ensemble_voting_elite.pkl`   | Soft voting ensemble (RF + XGBoost weighted) |
+
+**Model Training Details:**
+- **Dataset**: 5G DDoS synthetic dataset with 8 attack types (Normal, HTTP_Flood_5G, UDP_Amplification, ICMP_Flood, Slowloris_5G, TCP_SYN_Flood, DNS_Tunneling, QUIC_Flood)
+- **Features**: 17 core features + 5G-specific features (slice_type, 5qi, priority_level, gNB_id, AMF_id, UPF_id, NSSAI, TAC)
+- **Training Script**: `model/models/mininet.py` (Google Colab compatible)
+- **Scaler**: `scaler_enhanced.pkl` (StandardScaler for feature normalization)
+- **Label Encoder**: `label_encoder_enhanced.pkl` (for attack type encoding)
+- **Feature Columns**: `feature_columns.pkl` (17 features tracked)
+
+**Active Model in Production:**
+- **Primary**: Random Forest (`randomforest_enhanced.pkl`) - loaded in `app.py`
+- **Fallback**: Rule-based detection (PPS > 50 threshold) when ML unavailable
+- **Performance**: Sub-5ms inference with caching
 
 ---
 

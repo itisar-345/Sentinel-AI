@@ -153,17 +153,17 @@ export default function AIExplanation({ explanation, onClose }: AIExplanationPro
                     <div className="w-40 h-2 bg-gray-700 rounded-full overflow-hidden">
                       <div 
                         className={`h-full ${factor.impact > 0 ? 'bg-red-500' : 'bg-blue-500'}`}
-                        style={{ width: `${Math.min(Math.abs(factor.impact) * 100, 100)}%` }}
+                        style={{ width: `${Math.min(Math.abs(factor.impact) * 1000, 100)}%` }}
                       />
                     </div>
                     <span className={`font-mono text-sm ${factor.impact > 0 ? 'text-red-400' : 'text-blue-400'}`}>
-                      {factor.impact > 0 ? '+' : ''}{typeof factor.impact === 'number' ? factor.impact.toFixed(3) : '0.000'}
+                      {factor.impact > 0 ? '+' : ''}{typeof factor.impact === 'number' ? (factor.impact * 1000).toFixed(3) : '0.000'}
                     </span>
                   </div>
                 </div>
                 <div className="text-xs text-gray-400">
-                  {factor.impact > 0.5 ? 'Strong indicator of attack' : 
-                   factor.impact > 0.2 ? 'Moderate indicator' : 
+                  {factor.impact *10 > 0.5 ? 'Strong indicator of attack' : 
+                   factor.impact * 10 > 0.2 ? 'Moderate indicator' : 
                    'Weak indicator'}
                 </div>
               </div>

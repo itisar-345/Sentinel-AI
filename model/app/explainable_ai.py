@@ -24,6 +24,8 @@ class DDoSExplainer:
         
         # Get feature contributions (simplified SHAP-like)
         contributions = []
+        total_contribution = 0
+        
         for i, (feature_name, feature_value) in enumerate(zip(self.feature_names, features_scaled)):
             importance = self.feature_importance.get(feature_name, 0.01)
             
@@ -37,14 +39,19 @@ class DDoSExplainer:
             else:
                 contribution = importance * 0.1
             
+            total_contribution += contribution
+            
             contributions.append({
                 'feature': feature_name,
                 'value': float(feature_value),
                 'importance': float(importance),
                 'contribution': float(contribution),
-                'impact': float(contribution),  # Add impact for frontend compatibility
-                'normalized_contribution': float(contribution / max(sum([c['contribution'] for c in contributions]) + contribution, 0.01))
+                'impact': float(contribution)  # Add impact for frontend compatibility
             })
+        
+        # Normalize contributions
+        for contrib in contributions:
+            contrib['normalized_contribution'] = float(contrib['contribution'] / max(total_contribution, 0.01))
         
         # Sort by contribution
         contributions.sort(key=lambda x: x['contribution'], reverse=True)
